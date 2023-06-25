@@ -1,0 +1,49 @@
+version: '3'
+
+services:
+  db:
+    image: mysql:5.7
+    container_name: codeigniter_mysql_test
+    volumes:
+      # - ./scripts/user.sql:/docker-entrypoint-initdb.d/user.sql
+      - ./scripts:/docker-entrypoint-initdb.d
+      - ./db_data:/var/lib/mysql
+    ports:
+      - "3307:3306"
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      # MYSQL_DATABASE: ciapp
+      # MYSQL_PASSWORD: root
+      # MYSQL_USER: root
+      # MYSQL_ALLOW_EMPTY_PASSWORD: yes
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: codeigniter_phpmyadmin_test
+    links:
+      - db
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      PMA_ARBITRARY: 1
+    restart: always
+    ports:
+      - 8081:80
+
+  ciapp:
+    build: ./ciapp
+    container_name: codeigniter_test
+    volumes: 
+      - ./ciapp:/var/www/html/
+    depends_on:
+       - db
+    restart: always
+    links:
+      - db:mysql
+    ports:
+      - "8000:80"
+
+volumes:
+    db_data:
+    scripts:
